@@ -120,6 +120,10 @@ class App extends Component {
     const list =
       (results && results[searchKey] && results[searchKey].hits) || [];
 
+    if (error) {
+      return <p>Somthing went wrong</p>;
+    }
+
     return (
       <div className="page">
         <div className="interactions">
