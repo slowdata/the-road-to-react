@@ -6,6 +6,9 @@ import Search from "./components/Search";
 import Table from "./components/Table";
 import Button from "./components/Button";
 
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSpinner } from "@fortawesome/free-solid-svg-icons";
+
 import {
   DEFAULT_QUERY,
   DEFAULT_HPP,
@@ -44,7 +47,8 @@ class App extends Component {
     results: null,
     searchKey: "",
     searchTerm: DEFAULT_QUERY,
-    error: null
+    error: null,
+    isLoading: false
   };
 
   needsToSearchTopStories = searchTerm => {
@@ -65,7 +69,8 @@ class App extends Component {
       results: {
         ...results,
         [searchKey]: { hits: updatedHits, page }
-      }
+      },
+      isLoading: false
     });
   };
 
@@ -81,6 +86,7 @@ class App extends Component {
   }
 
   fetchSearchTopStories = (searchTerm, page = 0) => {
+    this.setState({ isLoading: true });
     axios(
       `${PATH_BASE}${PATH_SEARCH}?${PARAM_SEARCH}${searchTerm}&${PARAM_PAGE}${page}&${PARAM_HPP}&${PARAM_HPP}${DEFAULT_HPP}`
     )
@@ -119,7 +125,7 @@ class App extends Component {
   };
 
   render() {
-    const { results, searchTerm, searchKey, error } = this.state;
+    const { results, searchTerm, searchKey, error, isLoading } = this.state;
 
     const page =
       (results && results[searchKey] && results[searchKey].page) || 0;
@@ -143,18 +149,34 @@ class App extends Component {
             <p>Something went wrong</p>
           </div>
         ) : (
-          <Table result={list} onDismiss={this.onDismiss} />
+          <Table result={list} onSoronDismiss={this.onDismiss} />
         )}
         <div className="interactions">
-          <Button
-            onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}
-          >
-            More
-          </Button>
+          {isLoading ? (
+            <Loading />
+          ) : (
+            <ButtonWithLoading
+              isLoading={isLoading}
+              onClick={() => this.fetchSearchTopStories(searchKey, page + 1)}
+            >
+              More
+            </ButtonWithLoading>
+          )}
         </div>
       </div>
     );
   }
 }
+
+const Loading = () => (
+  <>
+    <FontAwesomeIcon icon={faSpinner} size="3x" pulse />
+  </>
+);
+
+const withLoading = Component => ({ isLoading, ...rest }) =>
+  isLoading ? <Loading /> : <Component {...rest} />;
+
+const ButtonWithLoading = withLoading(Button);
 
 export default App;
